@@ -7,13 +7,14 @@ NUM_BINS = 4
 
 
 def genRandomBins(nums):
-    nums_per_bin = math.floor(len(nums) / NUM_BINS)
+    nums_copy = nums.copy()
+    nums_per_bin = math.floor(len(nums_copy) / NUM_BINS)
     bins = []
     for bin_count in range(NUM_BINS):
         a_bin = []
-        for bin_nums_count in range(int(nums_per_bin)):
-            random.shuffle(nums)
-            a_bin.append(nums.pop())
+        for bin_nums_count in range(nums_per_bin):
+            random.shuffle(nums_copy)
+            a_bin.append(nums_copy.pop())
         bins.append(a_bin)
     return bins
 
@@ -29,10 +30,19 @@ def calcBinsFitness(bins):
     return bin_one_score + bin_two_score + bin_three_score
 
 
-def getBestNBins(bins, n):
-    best_bins = []
-    for a_bin in bins:
-        bin_fitness = calcBinsFitness()
+def getAndPopBestNBinSets(bin_sets, n):
+    best_bin_sets = []
+    for _ in range(n):
+        best_fitness = -1
+        best_bin_set_index = 0
+        for index, bins in enumerate(bin_sets):
+            bin_set_fitness = calcBinsFitness(bins)
+            if bin_set_fitness > best_fitness:
+                best_fitness = bin_set_fitness
+                best_bin_set_index = index
+        best_bin_sets.append(bin_sets[best_bin_set_index])
+        del bin_sets[best_bin_set_index]
+    return [best_bin_sets, bin_sets]
 
 
 def printBins(bins):
