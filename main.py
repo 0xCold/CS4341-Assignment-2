@@ -7,14 +7,20 @@ def assertTowerValid(tower):
         print("Invalid tower: Does not end with lookout.")
         return False
 
+    previous_piece_wideness = 0
     for index, piece in enumerate(tower):
         if piece[0] == "Door" and index != 0:
             print("Invalid tower: Door found in invalid position.")
             return False
 
         if piece[0] == "Lookout" and index != (len(tower) - 1):
-            print("Invalid tower: Door found in invalid position.")
+            print("Invalid tower: Lookout found in invalid position.")
             return False
+
+        if piece[1] > previous_piece_wideness:
+            print("Invalid tower: Wider piece stacked on top of a narrower piece.")
+            return False
+        previous_piece_wideness = piece[1]
 
     return True
 
