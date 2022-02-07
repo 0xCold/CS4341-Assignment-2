@@ -1,7 +1,6 @@
 import math
 import random
-import numpy as np
-
+# import numpy as np
 
 NUM_BINS = 4
 
@@ -71,10 +70,13 @@ def printTower(tower):
 
 
 if __name__ == "__main__":
-    rand_nums = np.random.uniform(-10,10,40)
-    rand_nums = rand_nums.tolist()
-    # test_nums = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    test_bins = genRandomBins(rand_nums)
+    # rand_nums = np.random.uniform(-10, 10, 40)
+    # rand_nums = rand_nums.tolist()
+    arr = []
+    for _ in range(40):
+        arr.append(random.uniform(-10, 10))
+
+    test_bins = genRandomBins(arr)
     printBins(test_bins)
     test_bins_fitness = calcBinsFitness(test_bins)
     print(" > Fitness:", test_bins_fitness)
