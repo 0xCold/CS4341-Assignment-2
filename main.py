@@ -1,5 +1,6 @@
 import math
 import random
+import numpy as np
 
 NUM_BINS = 4
 
@@ -9,7 +10,7 @@ def genRandomBins(nums):
     bins = []
     for bin_count in range(NUM_BINS):
         a_bin = []
-        for bin_nums_count in range(nums_per_bin):
+        for bin_nums_count in range(int(nums_per_bin)):
             random.shuffle(nums)
             a_bin.append(nums.pop())
         bins.append(a_bin)
@@ -35,7 +36,7 @@ def calcBinsFitness(bins):
 def printBins(bins):
     for a_bin in bins:
         for num in a_bin:
-            print(num, end=" ")
+            print(num)
         print('\n')
 
 
@@ -63,13 +64,15 @@ def calcTowerFitness(tower):
 def printTower(tower):
     for piece in tower:
         for spec in piece:
-            print(spec, end=" ")
+            print(spec, " ")
         print('\n')
 
 
 if __name__ == "__main__":
-    test_nums = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    test_bins = genRandomBins(test_nums)
+    rand_nums = np.random.uniform(-10,10,40)
+    rand_nums = rand_nums.tolist()
+    # test_nums = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    test_bins = genRandomBins(rand_nums)
     printBins(test_bins)
     test_bins_fitness = calcBinsFitness(test_bins)
     print(" > Fitness:", test_bins_fitness)
@@ -92,4 +95,3 @@ if __name__ == "__main__":
     test_tower_fitness = calcTowerFitness(test_tower)
     print(" > Fitness:", test_tower_fitness)
     print('\n')
-
