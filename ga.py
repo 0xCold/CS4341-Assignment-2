@@ -6,13 +6,14 @@ NUM_BINS = 4
 
 
 def genRandomBins(nums):
-    nums_per_bin = math.floor(len(nums) / NUM_BINS)
+    nums_copy = nums.copy()
+    nums_per_bin = math.floor(len(nums_copy) / NUM_BINS)
     bins = []
     for bin_count in range(NUM_BINS):
         a_bin = []
         for bin_nums_count in range(nums_per_bin):
-            random.shuffle(nums)
-            a_bin.append(nums.pop())
+            random.shuffle(nums_copy)
+            a_bin.append(nums_copy.pop())
         bins.append(a_bin)
     return bins
 
@@ -28,16 +29,25 @@ def calcBinsFitness(bins):
     return bin_one_score + bin_two_score + bin_three_score
 
 
-def getBestNBins(bins, n):
-    best_bins = []
-    for a_bin in bins:
-        bin_fitness = calcBinsFitness()
+def getAndPopBestNBinSets(bin_sets, n):
+    best_bin_sets = []
+    for _ in range(n):
+        best_fitness = -1
+        best_bin_set_index = 0
+        for index, bins in enumerate(bin_sets):
+            bin_set_fitness = calcBinsFitness(bins)
+            if bin_set_fitness > best_fitness:
+                best_fitness = bin_set_fitness
+                best_bin_set_index = index
+        best_bin_sets.append(bin_sets[best_bin_set_index])
+        del bin_sets[best_bin_set_index]
+    return [best_bin_sets, bin_sets]
 
 
 def printBins(bins):
     for a_bin in bins:
         for num in a_bin:
-            print(num, end=" ")
+            print(round(num, 3), end=" ")
         print('\n')
 
 
@@ -65,37 +75,30 @@ def calcTowerFitness(tower):
 def printTower(tower):
     for piece in tower:
         for spec in piece:
-            print(spec, end=" ")
+            print(spec, " ")
         print('\n')
 
 
 if __name__ == "__main__":
-    # rand_nums = np.random.uniform(-10, 10, 40)
-    # rand_nums = rand_nums.tolist()
-    arr = []
-    for _ in range(40):
-        arr.append(random.uniform(-10, 10))
+    test_bins_set = []
+    for bins_set_count in range(10):
+        print("Bins Set #" + str(bins_set_count) + ":")
+        # rand_nums = np.random.uniform(-10, 10, 40)
+        # rand_nums = rand_nums.tolist()
+        arr = []
+        for _ in range(40):
+            arr.append(random.uniform(-10, 10))
+        test_bins = genRandomBins(arr)
+        printBins(test_bins)
+        test_bins_fitness = calcBinsFitness(test_bins)
+        print(" > Fitness:", test_bins_fitness)
+        print('\n')
+        test_bins_set.append(test_bins)
 
-    test_bins = genRandomBins(arr)
-    printBins(test_bins)
-    test_bins_fitness = calcBinsFitness(test_bins)
-    print(" > Fitness:", test_bins_fitness)
-    print('\n')
-
-    test_tower = [["Door", 1, 1, 1], ["Wall", 1, 1, 1], ["Lookout", 1, 1, 1]]
-    printTower(test_tower)
-    test_tower_fitness = calcTowerFitness(test_tower)
-    print(" > Fitness:", test_tower_fitness)
-    print('\n')
-
-    test_tower = [["Lookout", 1, 1, 1], ["Wall", 1, 1, 1], ["Door", 1, 1, 1]]
-    printTower(test_tower)
-    test_tower_fitness = calcTowerFitness(test_tower)
-    print(" > Fitness:", test_tower_fitness)
-    print('\n')
-
-    test_tower = [["Door", 1, 1, 1], ["Door", 1, 1, 1], ["Lookout", 1, 1, 1]]
-    printTower(test_tower)
-    test_tower_fitness = calcTowerFitness(test_tower)
-    print(" > Fitness:", test_tower_fitness)
-    print('\n')
+    best_bins, remaining_bins = getAndPopBestNBinSets(test_bins_set, 2)
+    print("Top 2 Bins:")
+    for the_best_bins in best_bins:
+        printBins(the_best_bins)
+        the_best_bins_fitness = calcBinsFitness(the_best_bins)
+        print(" > Fitness:", the_best_bins_fitness)
+        print('\n')
