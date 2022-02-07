@@ -2,6 +2,7 @@ import math
 import random
 import numpy as np
 
+
 NUM_BINS = 4
 
 
@@ -10,7 +11,7 @@ def genRandomBins(nums):
     bins = []
     for bin_count in range(NUM_BINS):
         a_bin = []
-        for bin_nums_count in range(int(nums_per_bin)):
+        for bin_nums_count in range(nums_per_bin):
             random.shuffle(nums)
             a_bin.append(nums.pop())
         bins.append(a_bin)
@@ -21,22 +22,23 @@ def calcBinsFitness(bins):
     bin_one_score = 1
     for num in bins[0]:
         bin_one_score *= num
-
     bin_two_score = 0
     for num in bins[1]:
         bin_two_score += num
-
     bin_three_score = max(bins[2]) - min(bins[2])
+    return bin_one_score + bin_two_score + bin_three_score
 
-    bin_four_score = 0
 
-    return bin_one_score + bin_two_score + bin_three_score + bin_four_score
+def getBestNBins(bins, n):
+    best_bins = []
+    for a_bin in bins:
+        bin_fitness = calcBinsFitness()
 
 
 def printBins(bins):
     for a_bin in bins:
         for num in a_bin:
-            print(num)
+            print(num, end=" ")
         print('\n')
 
 
@@ -64,7 +66,7 @@ def calcTowerFitness(tower):
 def printTower(tower):
     for piece in tower:
         for spec in piece:
-            print(spec, " ")
+            print(spec, end=" ")
         print('\n')
 
 
