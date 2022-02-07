@@ -1,3 +1,7 @@
+def calcTowerFitness(tower):
+    return 0
+
+
 def assertTowerValid(tower):
     if tower[0][0] != "Door":
         print("Invalid tower: Does not start with door.")
