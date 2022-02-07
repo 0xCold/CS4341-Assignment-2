@@ -83,12 +83,10 @@ if __name__ == "__main__":
     test_bins_set = []
     for bins_set_count in range(10):
         print("Bins Set #" + str(bins_set_count) + ":")
-        # rand_nums = np.random.uniform(-10, 10, 40)
-        # rand_nums = rand_nums.tolist()
-        arr = []
+        rand_nums = []
         for _ in range(40):
-            arr.append(random.uniform(-10, 10))
-        test_bins = genRandomBins(arr)
+            rand_nums.append(random.uniform(-10, 10))
+        test_bins = genRandomBins(rand_nums)
         printBins(test_bins)
         test_bins_fitness = calcBinsFitness(test_bins)
         print(" > Fitness:", test_bins_fitness)
