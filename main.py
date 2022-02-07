@@ -21,17 +21,16 @@ def calcBinsFitness(bins):
     bin_one_score = 1
     for num in bins[0]:
         bin_one_score *= num
+
     bin_two_score = 0
     for num in bins[1]:
         bin_two_score += num
+
     bin_three_score = max(bins[2]) - min(bins[2])
-    return bin_one_score + bin_two_score + bin_three_score
 
+    bin_four_score = 0
 
-def getBestNBins(bins, n):
-    best_bins = []
-    for a_bin in bins:
-        bin_fitness = calcBinsFitness()
+    return bin_one_score + bin_two_score + bin_three_score + bin_four_score
 
 
 def printBins(bins):
