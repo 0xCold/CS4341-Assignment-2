@@ -48,7 +48,7 @@ def getAndPopBestNBinSets(bin_sets, n):
 def printBins(bins):
     for a_bin in bins:
         for num in a_bin:
-            print(num)
+            print(round(num, 3), end=" ")
         print('\n')
 
 
@@ -81,29 +81,17 @@ def printTower(tower):
 
 
 if __name__ == "__main__":
-    rand_nums = np.random.uniform(-10,10,40)
-    rand_nums = rand_nums.tolist()
-    # test_nums = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    test_bins = genRandomBins(rand_nums)
-    printBins(test_bins)
-    test_bins_fitness = calcBinsFitness(test_bins)
-    print(" > Fitness:", test_bins_fitness)
-    print('\n')
+    test_bins_set = []
+    for bins_set_count in range(10):
+        print("Bins Set #" + str(bins_set_count) + ":")
+        test_nums = np.random.uniform(-10, 10, 40)
+        test_nums = test_nums.tolist()
+        test_bins = genRandomBins(test_nums)
+        printBins(test_bins)
+        test_bins_fitness = calcBinsFitness(test_bins)
+        print(" > Fitness:", test_bins_fitness)
+        print('\n')
+        test_bins_set.append(test_bins)
 
-    test_tower = [["Door", 1, 1, 1], ["Wall", 1, 1, 1], ["Lookout", 1, 1, 1]]
-    printTower(test_tower)
-    test_tower_fitness = calcTowerFitness(test_tower)
-    print(" > Fitness:", test_tower_fitness)
-    print('\n')
-
-    test_tower = [["Lookout", 1, 1, 1], ["Wall", 1, 1, 1], ["Door", 1, 1, 1]]
-    printTower(test_tower)
-    test_tower_fitness = calcTowerFitness(test_tower)
-    print(" > Fitness:", test_tower_fitness)
-    print('\n')
-
-    test_tower = [["Door", 1, 1, 1], ["Door", 1, 1, 1], ["Lookout", 1, 1, 1]]
-    printTower(test_tower)
-    test_tower_fitness = calcTowerFitness(test_tower)
-    print(" > Fitness:", test_tower_fitness)
-    print('\n')
+    bestBins, remainingBins = getAndPopBestNBinSets(test_bins_set, 2)
+    print("Best Bins:", bestBins)
