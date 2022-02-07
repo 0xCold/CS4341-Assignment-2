@@ -1,5 +1,15 @@
+import random
+
+
 def genRandomBins(nums):
-    None
+    bins = []
+    for bin_count in range(4):
+        a_bin = []
+        for bin_nums_count in range(4):
+            random.shuffle(nums)
+            a_bin.append(nums.pop())
+        bins.append(a_bin)
+    return bins
 
 
 def calcBinsFitness(bins):
