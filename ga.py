@@ -5,6 +5,13 @@ import random
 NUM_BINS = 4
 
 
+def genRandomNumberSets(length):
+    rand_nums = []
+    for _ in range(length):
+        rand_nums.append(random.uniform(-10, 10))
+    return rand_nums
+
+
 def genRandomBins(nums):
     nums_copy = nums.copy()
     nums_per_bin = math.floor(len(nums_copy) / NUM_BINS)
@@ -83,10 +90,8 @@ if __name__ == "__main__":
     test_bins_set = []
     for bins_set_count in range(10):
         print("Bins Set #" + str(bins_set_count) + ":")
-        rand_nums = []
-        for _ in range(40):
-            rand_nums.append(random.uniform(-10, 10))
-        test_bins = genRandomBins(rand_nums)
+        test_nums = genRandomNumberSets(40)
+        test_bins = genRandomBins(test_nums)
         printBins(test_bins)
         test_bins_fitness = calcBinsFitness(test_bins)
         print(" > Fitness:", test_bins_fitness)
