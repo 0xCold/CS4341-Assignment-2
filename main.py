@@ -1,11 +1,13 @@
 import random
 
+NUM_BINS = 4
+
 
 def genRandomBins(nums):
     bins = []
-    for bin_count in range(4):
+    for bin_count in range(NUM_BINS):
         a_bin = []
-        for bin_nums_count in range(4):
+        for bin_nums_count in range(len(nums) / NUM_BINS):
             random.shuffle(nums)
             a_bin.append(nums.pop())
         bins.append(a_bin)
