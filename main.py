@@ -1,43 +1,80 @@
+def genRandomBins(nums):
+    None
+
+
+def calcBinsFitness(bins):
+    bin_one_score = 1
+    for num in bins[0]:
+        bin_one_score *= num
+
+    bin_two_score = 0
+    for num in bins[1]:
+        bin_two_score += num
+
+    bin_three_score = max(bins[2]) - min(bins[2])
+
+    bin_four_score = 0
+
+    return bin_one_score + bin_two_score + bin_three_score + bin_four_score
+
+
+def printBins(bins):
+    for a_bin in bins:
+        for num in a_bin:
+            print(num, end=" ")
+        print('\n')
+
+
+def genRandomTower():
+    None
+
+
 def calcTowerFitness(tower):
-    return 0
-
-
-def assertTowerValid(tower):
-    if tower[0][0] != "Door":
-        print("Invalid tower: Does not start with door.")
-        return False
-
-    if tower[len(tower) - 1][0] != "Lookout":
-        print("Invalid tower: Does not end with lookout.")
-        return False
+    if (tower[0][0] != "Door") or (tower[len(tower) - 1][0] != "Lookout"):
+        return 0
 
     previous_piece_wideness = 0
     for index, piece in enumerate(tower):
-        if piece[0] == "Door" and index != 0:
-            print("Invalid tower: Door found in invalid position.")
-            return False
+        if (piece[0] == "Door" and index != 0) or (piece[0] == "Lookout" and index != (len(tower) - 1)):
+            return 0
 
-        if piece[0] == "Lookout" and index != (len(tower) - 1):
-            print("Invalid tower: Lookout found in invalid position.")
-            return False
+        if (piece[1] > previous_piece_wideness) and (previous_piece_wideness > 0):
+            return 0
 
-        if piece[1] > previous_piece_wideness:
-            print("Invalid tower: Wider piece stacked on top of a narrower piece.")
-            return False
         previous_piece_wideness = piece[1]
 
-    return True
+    return 1
+
+
+def printTower(tower):
+    for piece in tower:
+        for spec in piece:
+            print(spec, end=" ")
+        print('\n')
 
 
 if __name__ == "__main__":
+    test_bins = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]]
+    printBins(test_bins)
+    test_bins_fitness = calcBinsFitness(test_bins)
+    print(" > Fitness:", test_bins_fitness)
+    print('\n')
+
     test_tower = [["Door", 1, 1, 1], ["Wall", 1, 1, 1], ["Lookout", 1, 1, 1]]
-    tower_is_valid = assertTowerValid(test_tower)
-    print(tower_is_valid)
+    printTower(test_tower)
+    test_tower_fitness = calcTowerFitness(test_tower)
+    print(" > Fitness:", test_tower_fitness)
+    print('\n')
 
     test_tower = [["Lookout", 1, 1, 1], ["Wall", 1, 1, 1], ["Door", 1, 1, 1]]
-    tower_is_valid = assertTowerValid(test_tower)
-    print(tower_is_valid)
+    printTower(test_tower)
+    test_tower_fitness = calcTowerFitness(test_tower)
+    print(" > Fitness:", test_tower_fitness)
+    print('\n')
 
     test_tower = [["Door", 1, 1, 1], ["Door", 1, 1, 1], ["Lookout", 1, 1, 1]]
-    tower_is_valid = assertTowerValid(test_tower)
-    print(tower_is_valid)
+    printTower(test_tower)
+    test_tower_fitness = calcTowerFitness(test_tower)
+    print(" > Fitness:", test_tower_fitness)
+    print('\n')
+
