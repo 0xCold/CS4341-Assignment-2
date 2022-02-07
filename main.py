@@ -93,5 +93,10 @@ if __name__ == "__main__":
         print('\n')
         test_bins_set.append(test_bins)
 
-    bestBins, remainingBins = getAndPopBestNBinSets(test_bins_set, 2)
-    print("Best Bins:", bestBins)
+    best_bins, remaining_bins = getAndPopBestNBinSets(test_bins_set, 2)
+    print("Top 2 Bins:")
+    for the_best_bins in best_bins:
+        printBins(the_best_bins)
+        the_best_bins_fitness = calcBinsFitness(the_best_bins)
+        print(" > Fitness:", the_best_bins_fitness)
+        print('\n')
