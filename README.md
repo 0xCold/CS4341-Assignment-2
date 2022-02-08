@@ -7,6 +7,15 @@ Assignment #2:  Genetic algorithms
 Due date:  February 14, 2022 @ 1:59 pm
 
 This assignment will familiarize you with genetic algorithms (GA).  You will solve a variety of problems to learn about representation (the biggest challenge for GA).  You will also conduct experiments **with a couple of variants of GA to see how they affect performance.**
+
+## Running the Project
+
+Run the program from the project directory:
+
+```
+python ga.py [PUZZEL NUMBER (1, 2)] [INFO FILE] [SECONDS TO RUN FOR]
+```
+
 # Framework
 It is recommended that you first develop a codebase for how your GA will work at a high level.  In particular, you need to determine:
 1. How large is the population?

@@ -1,8 +1,26 @@
 import math
 import random
+import argparse
+import time
 
 NUM_BINS = 4
 
+
+# Get input from user
+def parse_args():
+    parser = argparse.ArgumentParser(description='Use a genetic algorithm to solve number allocation or tower building')
+    parser.add_argument('puzzle', help='Puzzle to use the algorithm to solve [1 (Numbers), 2 (Towers)]')
+    parser.add_argument('info', help='A file that contains the puzzle information')
+    parser.add_argument('seconds', help='The number of seconds it has to find a solution')
+
+    args = parser.parse_args()
+    return int(args.puzzle), args.info, args.seconds
+
+# Check if timer has run out, returns true is overtime, false otherwise
+def timeRunOut(start, seconds):
+    end = time.time()
+    elapsed_time = end - start
+    return elapsed_time > seconds
 
 def genRandomNumberSets(length):
     rand_nums = []
@@ -73,7 +91,7 @@ def printBins(bins):
 
 
 def genRandomTower():
-    None
+    pass
 
 
 def calcTowerFitness(tower):
@@ -101,29 +119,44 @@ def printTower(tower):
 
 
 if __name__ == "__main__":
-    test_bins_set = []
-    for bins_set_count in range(10):
-        print("Bins Set #" + str(bins_set_count) + ":")
-        test_nums = genRandomNumberSets(40)
-        test_bins = genRandomBins(test_nums)
-        printBins(test_bins)
-        test_bins_fitness = calcBinsFitness(test_bins)
-        print(" > Fitness:", test_bins_fitness)
-        print('\n')
-        test_bins_set.append(test_bins)
+    # Get user input
+    puzzle_num, info_file, num_seconds = parse_args()
 
-    best_bins, remaining_bins_b = getAndPopBestNBinSets(test_bins_set, 2)
-    print("Top 2 Bins:")
-    for the_best_bins in best_bins:
-        printBins(the_best_bins)
-        the_best_bins_fitness = calcBinsFitness(the_best_bins)
-        print(" > Fitness:", the_best_bins_fitness)
-        print('\n')
+    # TIMER STUFF TO BE MOVED
+    start_time = time.time()
+    timeRunOut(start_time, num_seconds)
 
-    worst_bins, remaining_bins_w = getAndPopWorstNBinSets(test_bins_set, 2)
-    print("Worst 2 Bins:")
-    for the_worst_bins in worst_bins:
-        printBins(the_worst_bins)
-        the_worst_bins_fitness = calcBinsFitness(the_worst_bins)
-        print(" > Fitness:", the_worst_bins_fitness)
-        print('\n')
+    # Number Allocation
+    if puzzle_num == 1:
+        test_bins_set = []
+        for bins_set_count in range(10):
+            print("Bins Set #" + str(bins_set_count) + ":")
+            test_nums = genRandomNumberSets(40)
+            test_bins = genRandomBins(test_nums)
+            printBins(test_bins)
+            test_bins_fitness = calcBinsFitness(test_bins)
+            print(" > Fitness:", test_bins_fitness)
+            print('\n')
+            test_bins_set.append(test_bins)
+
+        best_bins, remaining_bins_b = getAndPopBestNBinSets(test_bins_set, 2)
+        print("Top 2 Bins:")
+        for the_best_bins in best_bins:
+            printBins(the_best_bins)
+            the_best_bins_fitness = calcBinsFitness(the_best_bins)
+            print(" > Fitness:", the_best_bins_fitness)
+            print('\n')
+
+        worst_bins, remaining_bins_w = getAndPopWorstNBinSets(test_bins_set, 2)
+        print("Worst 2 Bins:")
+        for the_worst_bins in worst_bins:
+            printBins(the_worst_bins)
+            the_worst_bins_fitness = calcBinsFitness(the_worst_bins)
+            print(" > Fitness:", the_worst_bins_fitness)
+            print('\n')
+    # Tower Building
+    elif puzzle_num == 2:
+        pass
+    # Bad Input
+    else:
+        print("Bad puzzle number input. Must be either a 1 for number allocation or a 2 for tower building")
