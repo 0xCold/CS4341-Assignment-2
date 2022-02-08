@@ -1,6 +1,5 @@
 import math
 import random
-# import numpy as np
 
 NUM_BINS = 4
 
@@ -51,6 +50,21 @@ def getAndPopBestNBinSets(bin_sets, n):
     return [best_bin_sets, bin_sets]
 
 
+def getAndPopWorstNBinSets(bin_sets, n):
+    worst_bin_sets = []
+    for _ in range(n):
+        worst_fitness = -1
+        worst_bin_set_index = 0
+        for index, bins in enumerate(bin_sets):
+            bin_set_fitness = calcBinsFitness(bins)
+            if bin_set_fitness < worst_fitness:
+                worst_fitness = bin_set_fitness
+                worst_bin_set_index = index
+        worst_bin_sets.append(bin_sets[worst_bin_set_index])
+        del bin_sets[worst_bin_set_index]
+    return [worst_bin_sets, bin_sets]
+
+
 def printBins(bins):
     for a_bin in bins:
         for num in a_bin:
@@ -98,10 +112,18 @@ if __name__ == "__main__":
         print('\n')
         test_bins_set.append(test_bins)
 
-    best_bins, remaining_bins = getAndPopBestNBinSets(test_bins_set, 2)
+    best_bins, remaining_bins_b = getAndPopBestNBinSets(test_bins_set, 2)
     print("Top 2 Bins:")
     for the_best_bins in best_bins:
         printBins(the_best_bins)
         the_best_bins_fitness = calcBinsFitness(the_best_bins)
         print(" > Fitness:", the_best_bins_fitness)
+        print('\n')
+
+    worst_bins, remaining_bins_w = getAndPopWorstNBinSets(test_bins_set, 2)
+    print("Worst 2 Bins:")
+    for the_worst_bins in worst_bins:
+        printBins(the_worst_bins)
+        the_worst_bins_fitness = calcBinsFitness(the_worst_bins)
+        print(" > Fitness:", the_worst_bins_fitness)
         print('\n')
