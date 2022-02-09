@@ -34,12 +34,12 @@ def genRandomNumberSets(length):
 
 # Divide the available float values into random bins
 def genRandomBins(nums):
-    nums_copy = nums.copy()
+    nums_copy = list(nums)
     nums_per_bin = math.floor(len(nums_copy) / NUM_BINS)
     bins = []
     for bin_count in range(NUM_BINS):
         a_bin = []
-        for bin_nums_count in range(nums_per_bin):
+        for bin_nums_count in range(int(nums_per_bin)):
             random.shuffle(nums_copy)
             a_bin.append(nums_copy.pop())
         bins.append(a_bin)
@@ -89,6 +89,26 @@ def getAndPopWorstNBinSets(bin_sets, n):
         del bin_sets[worst_bin_set_index]
     return [worst_bin_sets, bin_sets]
 
+# pass in culled list of bin sets
+def assignSelection(bin_sets):
+    bin_fitness = []
+
+    # calculate bin fitness of 4 bins
+    for bin_set in bin_sets:
+        bin_fitness.append(calcBinsFitness(bin_set))
+
+    # find sum of all fitnesses
+    sum_bin_fitness = sum(bin_fitness)
+    print("SUM OF BIN FITNESS", sum_bin_fitness)
+    print('\n')
+
+    bin_selection_list = []
+    for bin_set in bin_sets:
+        selection_bin = (abs(calcBinsFitness(bin_set)/sum_bin_fitness), bins)
+        bin_selection_list.append(selection_bin)
+        print(selection_bin)
+        print('\n')
+
 
 # Randomly mutates bins in a list of bin sets, based on the mutation odds global variable
 def mutateBins(bin_sets):
@@ -110,7 +130,7 @@ def mutateBins(bin_sets):
 def printBins(bins):
     for a_bin in bins:
         for num in a_bin:
-            print(round(num, 1), end=" ")
+            print(round(num, 1))
         print('\n')
 
 
@@ -162,6 +182,7 @@ def printTower(tower):
         print('\n')
 
 
+
 if __name__ == "__main__":
     # Get user input
     puzzle_num, info_file, num_seconds = parse_args()
@@ -180,6 +201,7 @@ if __name__ == "__main__":
             printBins(test_bins)
             exportBins(test_bins, bins_set_count)
             test_bins_fitness = calcBinsFitness(test_bins)
+
             print(" > Fitness:", test_bins_fitness)
             print('\n')
             test_bins_set.append(test_bins)
@@ -200,6 +222,7 @@ if __name__ == "__main__":
             print(" > Fitness:", the_worst_bins_fitness)
             print('\n')
 
+        assignSelection(remaining_bins_w)
     # Tower Building
     elif puzzle_num == 2:
         pass
