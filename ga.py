@@ -16,11 +16,13 @@ def parse_args():
     args = parser.parse_args()
     return int(args.puzzle), args.info, args.seconds
 
+
 # Check if timer has run out, returns true is overtime, false otherwise
 def timeRunOut(start, seconds):
     end = time.time()
     elapsed_time = end - start
     return elapsed_time > seconds
+
 
 def genRandomNumberSets(length):
     rand_nums = []
@@ -83,10 +85,14 @@ def getAndPopWorstNBinSets(bin_sets, n):
     return [worst_bin_sets, bin_sets]
 
 
+def mutateBins(bins):
+    None
+
+
 def printBins(bins):
     for a_bin in bins:
         for num in a_bin:
-            print(round(num, 3), end=" ")
+            print(round(num, 1), end=" ")
         print('\n')
 
 
