@@ -4,6 +4,7 @@ import argparse
 import time
 
 NUM_BINS = 4
+MUTATION_ODDS = 12  # Odds out of 100 for an individual bin to mutate
 
 
 # Get input from user
@@ -89,8 +90,20 @@ def getAndPopWorstNBinSets(bin_sets, n):
     return [worst_bin_sets, bin_sets]
 
 
-def mutateBins(bins):
-    None
+# Randomly mutates bins in a list of bin sets, based on the mutation odds global variable
+def mutateBins(bin_sets):
+    for bin_set in bin_sets:
+        for a_bin in bin_set:
+            do_mutate = random.randint(0, 100) >= MUTATION_ODDS
+            if do_mutate:
+                # Swap a random number in this bin with a number from a different, random bin
+                mutator_num = random.choice(a_bin)
+                mutator_index = a_bin.index(mutator_num)
+                mutated_bin = random.choice(bin_set)
+                mutated_num = random.choice(mutated_bin)
+                mutated_index = mutated_bin.index(mutated_num)
+                a_bin[mutator_index] = mutated_num
+                mutated_bin[mutated_index] = mutator_num
 
 
 # Print out the beautified set of bins to the console
