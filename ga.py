@@ -12,7 +12,6 @@ def parse_args():
     parser.add_argument('puzzle', help='Puzzle to use the algorithm to solve [1 (Numbers), 2 (Towers)]')
     parser.add_argument('info', help='A file that contains the puzzle information')
     parser.add_argument('seconds', help='The number of seconds it has to find a solution')
-
     args = parser.parse_args()
     return int(args.puzzle), args.info, args.seconds
 
@@ -21,9 +20,10 @@ def parse_args():
 def timeRunOut(start, seconds):
     end = time.time()
     elapsed_time = end - start
-    return elapsed_time > seconds
+    return elapsed_time > float(seconds)
 
 
+# Generate random float values in [-10, 10] for use in the Bin puzzle
 def genRandomNumberSets(length):
     rand_nums = []
     for _ in range(length):
@@ -31,6 +31,7 @@ def genRandomNumberSets(length):
     return rand_nums
 
 
+# Divide the available float values into random bins
 def genRandomBins(nums):
     nums_copy = nums.copy()
     nums_per_bin = math.floor(len(nums_copy) / NUM_BINS)
@@ -44,6 +45,7 @@ def genRandomBins(nums):
     return bins
 
 
+# Calculate the fitness score for a set of bins
 def calcBinsFitness(bins):
     bin_one_score = 1
     for num in bins[0]:
@@ -55,6 +57,7 @@ def calcBinsFitness(bins):
     return bin_one_score + bin_two_score + bin_three_score
 
 
+# From a list of sets of bins, return the N best-scoring sets (by fitness), along with the remaining boards
 def getAndPopBestNBinSets(bin_sets, n):
     best_bin_sets = []
     for _ in range(n):
@@ -70,6 +73,7 @@ def getAndPopBestNBinSets(bin_sets, n):
     return [best_bin_sets, bin_sets]
 
 
+# From a list of sets of bins, return the N worst-scoring sets (by fitness), along with the remaining boards
 def getAndPopWorstNBinSets(bin_sets, n):
     worst_bin_sets = []
     for _ in range(n):
@@ -89,11 +93,32 @@ def mutateBins(bins):
     None
 
 
+# Print out the beautified set of bins to the console
 def printBins(bins):
     for a_bin in bins:
         for num in a_bin:
             print(round(num, 1), end=" ")
         print('\n')
+
+
+# Write the representation of a set of bins to a file
+def exportBins(bins, file_name_suffix):
+    with open("puzzles/bins/bins-" + str(file_name_suffix) + ".txt", "w+") as f:
+        for a_bin in bins:
+            for num in a_bin:
+                f.write(str(num) + " ")
+            f.write("\n")
+
+
+# Read the representation of a set of bins from a specified file path
+def parseBins(bins_file_path):
+    parsed_bins = []
+    with open(bins_file_path, "r") as f:
+        bins_text = f.readlines()
+        for a_bin in bins_text:
+            a_bin_nums = a_bin.split()
+            parsed_bins.append([float(i) for i in a_bin_nums])
+    return parsed_bins
 
 
 def genRandomTower():
@@ -140,6 +165,7 @@ if __name__ == "__main__":
             test_nums = genRandomNumberSets(40)
             test_bins = genRandomBins(test_nums)
             printBins(test_bins)
+            exportBins(test_bins, bins_set_count)
             test_bins_fitness = calcBinsFitness(test_bins)
             print(" > Fitness:", test_bins_fitness)
             print('\n')
@@ -160,9 +186,11 @@ if __name__ == "__main__":
             the_worst_bins_fitness = calcBinsFitness(the_worst_bins)
             print(" > Fitness:", the_worst_bins_fitness)
             print('\n')
+
     # Tower Building
     elif puzzle_num == 2:
         pass
+
     # Bad Input
     else:
         print("Bad puzzle number input. Must be either a 1 for number allocation or a 2 for tower building")
