@@ -104,7 +104,7 @@ def assignSelection(bin_sets):
 
     bin_selection_list = []
     for bin_set in bin_sets:
-        selection_bin = (abs(calcBinsFitness(bin_set)/sum_bin_fitness), bins)
+        selection_bin = (abs(calcBinsFitness(bin_set)/sum_bin_fitness), bin_set)
         bin_selection_list.append(selection_bin)
         print(selection_bin)
         print('\n')
