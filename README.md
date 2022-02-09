@@ -13,7 +13,7 @@ This assignment will familiarize you with genetic algorithms (GA).  You will sol
 Run the program from the project directory:
 
 ```
-python ga.py [PUZZEL NUMBER (1, 2)] [INFO FILE] [SECONDS TO RUN FOR]
+python ga.py [PUZZLE NUMBER (1, 2)] [INFO FILE] [SECONDS TO RUN FOR]
 ```
 
 # Framework
