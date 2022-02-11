@@ -4,7 +4,7 @@ import argparse
 import time
 
 NUM_BINS = 4
-MUTATION_ODDS = 12  # Odds out of 100 for an individual bin to mutate
+MUTATION_ODDS = 1  # Odds out of 100 for an individual bin to mutate
 
 
 # Get input from user
@@ -112,16 +112,26 @@ def assignSelection(bin_sets):
 
 # Randomly mutates bins in a list of bin sets, based on the mutation odds global variable
 def mutateBins(bin_sets):
+    # Loop for all bin sets
     for bin_set in bin_sets:
+        # Loop for bins in a bin set
         for a_bin in bin_set:
-            do_mutate = random.randint(0, 100) >= MUTATION_ODDS
+            # Do mutation odds
+            do_mutate = random.randint(0, 100) <= MUTATION_ODDS
+            # If mutation is true, swap a random number in this bin with a number from a different, random bin
             if do_mutate:
-                # Swap a random number in this bin with a number from a different, random bin
+                # Get mutator number and index
                 mutator_num = random.choice(a_bin)
                 mutator_index = a_bin.index(mutator_num)
+                # Get a bin to swap with
                 mutated_bin = random.choice(bin_set)
+                # Make sure the bins are different
+                while mutated_bin == a_bin:
+                    mutated_bin = random.choice(bin_set)
+                # Get mutated number and index
                 mutated_num = random.choice(mutated_bin)
                 mutated_index = mutated_bin.index(mutated_num)
+                # Swap the numbers
                 a_bin[mutator_index] = mutated_num
                 mutated_bin[mutated_index] = mutator_num
 
