@@ -8,9 +8,11 @@ MUTATION_ODDS = 1  # Odds out of 100 for an individual bin to mutate
 INITIAL_POPULATION_SIZE = 10
 
 USE_ELITISM = True
+NUM_ELITISM = 2
 USE_CULLING = True
+NUM_CULLING = 2
 
-CROSSOVER_BINS = [1, 2C]
+CROSSOVER_BINS = [1, 2]
 
 
 # Get input from user
@@ -66,34 +68,35 @@ def calcBinsFitness(bins):
 
 # From a list of sets of bins, return the N best-scoring sets (by fitness), along with the remaining boards
 def getBestNBinSets(bin_sets, n):
+    copy_bin_sets = list(bin_sets)
     best_bin_sets = []
     for _ in range(n):
         best_fitness = -1
         best_bin_set_index = 0
-        for index, bins in enumerate(bin_sets):
+        for index, bins in enumerate(copy_bin_sets):
             bin_set_fitness = calcBinsFitness(bins)
             if bin_set_fitness > best_fitness:
                 best_fitness = bin_set_fitness
                 best_bin_set_index = index
-        best_bin_sets.append(bin_sets[best_bin_set_index])
-        del bin_sets[best_bin_set_index]
+        best_bin_sets.append(copy_bin_sets[best_bin_set_index])
+        del copy_bin_sets[best_bin_set_index]
     return best_bin_sets
 
 
 # From a list of sets of bins, return the N worst-scoring sets (by fitness), along with the remaining boards
 def getAndPopWorstNBinSets(bin_sets, n):
-    worst_bin_sets = []
+    copy_bin_sets = list(bin_sets)
     for _ in range(n):
         worst_fitness = -1
         worst_bin_set_index = 0
-        for index, bins in enumerate(bin_sets):
+        for index, bins in enumerate(copy_bin_sets):
             bin_set_fitness = calcBinsFitness(bins)
             if bin_set_fitness < worst_fitness:
                 worst_fitness = bin_set_fitness
                 worst_bin_set_index = index
-        worst_bin_sets.append(bin_sets[worst_bin_set_index])
-        del bin_sets[worst_bin_set_index]
-    return bin_sets
+        del copy_bin_sets[worst_bin_set_index]
+    print(copy_bin_sets)
+    return copy_bin_sets
 
 
 # pass in culled list of bin sets
@@ -156,6 +159,8 @@ def mutateBins(bin_sets):
                 a_bin[mutator_index] = mutated_num
                 mutated_bin[mutated_index] = mutator_num
 
+    return bin_sets
+
 
 # bin_sets = list of tuples
 def crossoverBins(bin_sets, bins_to_swap):
@@ -203,7 +208,7 @@ def crossoverBins(bin_sets, bins_to_swap):
     printBins(crossed_over_bin_sets[0])
     printBins(crossed_over_bin_sets[1])
 
-    return crossed_over_bin_sets
+    return bin_set_a_copy, bin_set_b_copy
 
 
 # Print out the beautified set of bins to the console
@@ -263,74 +268,62 @@ if __name__ == "__main__":
     # Get user input
     puzzle_num, info_file, num_seconds = parse_args()
 
-    input_nums = parseBins(info_file)
-    print(input_nums)
-
-    population = []
-    for i in range(INITIAL_POPULATION_SIZE):
-        random_bin = genRandomBins(input_nums)
-        population.append(random_bin)
-
-    ga_running = True
-    start_time = time.time()
-    population_num = 0
-
-    while ga_running:
-        if USE_ELITISM:
-            elite_bins = getBestNBinSets(population)
-        if USE_CULLING:
-            population = getAndPopWorstNBinSets(population)
-        crossoverBins(population, CROSSOVER_BINS)
-        mutateBins(population)
-
-        population_num += 1
-        ga_running = not timeRunOut(start_time, num_seconds)
-
-
-    """# TIMER STUFF TO BE MOVED
-    start_time = time.time()
-    timeRunOut(start_time, num_seconds)
-
     # Number Allocation
     if puzzle_num == 1:
-        test_bins_set = []
-        for bins_set_count in range(10):
-            print("Bins Set #" + str(bins_set_count) + ":")
-            test_nums = genRandomNumberSets(40)
-            test_bins = genRandomBins(test_nums)
-            printBins(test_bins)
-            exportBins(test_bins, bins_set_count)
-            test_bins_fitness = calcBinsFitness(test_bins)
+        input_nums = parseBins(info_file)
+        print(input_nums)
 
-            print(" > Fitness:", test_bins_fitness)
-            print('\n')
-            test_bins_set.append(test_bins)
+        population = []
+        for i in range(INITIAL_POPULATION_SIZE):
+            random_bin = genRandomBins(input_nums)
+            population.append(random_bin)
 
-        best_bins, remaining_bins_b = getAndPopBestNBinSets(test_bins_set, 2)
-        print("Top 2 Bins:")
-        for the_best_bins in best_bins:
-            printBins(the_best_bins)
-            the_best_bins_fitness = calcBinsFitness(the_best_bins)
-            print(" > Fitness:", the_best_bins_fitness)
-            print('\n')
+        best_bin = getBestNBinSets(population, 1)[0]
+        best_bin_generation = 0
+        ga_running = True
+        start_time = time.time()
+        generation_num = 0
 
-        worst_bins, remaining_bins_w = getAndPopWorstNBinSets(test_bins_set, 2)
-        print("Worst 2 Bins:")
-        for the_worst_bins in worst_bins:
-            printBins(the_worst_bins)
-            the_worst_bins_fitness = calcBinsFitness(the_worst_bins)
-            print(" > Fitness:", the_worst_bins_fitness)
-            print('\n')
+        while ga_running:
+            children_bins = []
+            # Elitism
+            if USE_ELITISM:
+                elite_bins = getBestNBinSets(population, NUM_ELITISM)
+                children_bins = elite_bins
+            # Culling
+            if USE_CULLING:
+                population = getAndPopWorstNBinSets(population, NUM_CULLING)
 
-        bin_selection_list = assignSelection(remaining_bins_w)
-        crossoverBins(bin_selection_list, [1, 2])
-        mutateBins(remaining_bins_w)
+            # Crossover
+            tuple_bins = assignSelection(population)
+            children_len = len(children_bins)
+            for _ in range(int((INITIAL_POPULATION_SIZE - children_len) / 2)):
+                bin_a, bin_b = crossoverBins(tuple_bins, CROSSOVER_BINS)
+                children_bins.append(bin_a)
+                children_bins.append(bin_b)
 
+            # Mutation
+            children_bins = mutateBins(children_bins)
+
+            # Check if a new best bin set has been found
+            generation_num += 1
+            best_child = getBestNBinSets(children_bins, 1)[0]
+            if calcBinsFitness(best_child) > calcBinsFitness(best_bin):
+                best_bin = best_child
+                best_bin_generation = generation_num
+            print("Mid score", calcBinsFitness(best_child))
+
+            # Set up next generation
+            population = children_bins
+            ga_running = not timeRunOut(start_time, num_seconds)
+
+        # Output
+        print("Best bin set", best_bin)
+        print("Best score", calcBinsFitness(best_bin))
+        print("Best generation", best_bin_generation)
     # Tower Building
     elif puzzle_num == 2:
         pass
-
     # Bad Input
     else:
         print("Bad puzzle number input. Must be either a 1 for number allocation or a 2 for tower building")
-"""
