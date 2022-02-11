@@ -2,6 +2,7 @@ import math
 import random
 import argparse
 import time
+import numpy as np
 
 NUM_BINS = 4
 MUTATION_ODDS = 1  # Odds out of 100 for an individual bin to mutate
@@ -97,20 +98,27 @@ def assignSelection(bin_sets):
     for bin_set in bin_sets:
         bin_fitness.append(calcBinsFitness(bin_set))
 
+    min_bin_fitness = min(bin_fitness)
+    if min_bin_fitness < 0:
+        min_bin_fitness = abs(min_bin_fitness) + 1
+        shifted_bin_fitness = []
+        for bin_fit in bin_fitness:
+            shifted_bin_fitness.append(bin_fit + min_bin_fitness)
+
     # find sum of all fitnesses
-    sum_bin_fitness = sum(bin_fitness)
+    sum_bin_fitness = sum(shifted_bin_fitness)
     print("SUM OF BIN FITNESS", sum_bin_fitness)
     print('\n')
 
     bin_selection_list = []
     total_percentage = 0
-    for bin_set in bin_sets:
-        cumulative_percentage = abs(calcBinsFitness(bin_set)/sum_bin_fitness) + total_percentage
+    for i in range(len(bin_sets)):
+        cumulative_percentage = (shifted_bin_fitness[i]/sum_bin_fitness) + total_percentage
         total_percentage = cumulative_percentage
-        selection_bin = (cumulative_percentage, bin_set)
+        selection_bin = (cumulative_percentage, bin_sets[i])
         bin_selection_list.append(selection_bin)
-        print(selection_bin)
-        print('\n')
+        # print(selection_bin)
+        # print('\n')
 
     return bin_selection_list # List of tuple + list: [(probability, [bin_set])]
 
@@ -141,26 +149,54 @@ def mutateBins(bin_sets):
                 mutated_bin[mutated_index] = mutator_num
 
 
+# bin_sets = list of tuples
 def crossoverBins(bin_sets, bins_to_swap):
     parent_1 = random.uniform(0, 1)
     parent_2 = random.uniform(0, 1)
 
-    bin_sets_to_crossover = []
     # Find parent 1 and parent 2
+    bin_sets_to_crossover = []
+    counter_1 = 0
     for tuple_set in bin_sets:
-        if parent_1 <= tuple_set[0] or parent_2 <= tuple_set[0]:
+        if parent_1 <= tuple_set[0]:
             bin_sets_to_crossover.append(tuple_set[1])
+            break
+        counter_1+=1
 
-    # bin_sets_to_crossover = [[random.choice(bin_sets), random.choice(bin_sets)]]
+    counter_2 = 0
+    while(True):
+        for tuple_set in bin_sets:
+            if parent_2 <= tuple_set[0]:
+                if counter_1 == counter_2:
+                    parent_2 = random.uniform(0, 1)
+                else:
+                    bin_sets_to_crossover.append(tuple_set[1])
+                break
+            counter_2+=1
+        if counter_1 != counter_2:
+            break
+
+    #TODO: MAKE SURE THAT THE TWO CROSSED OVER BINS ARE DIFFERENT
+
+
     crossed_over_bin_sets = []
-    for [bin_set_a, bin_set_b] in bin_sets_to_crossover:
-        bin_set_a_copy = bin_set_a.copy()
-        bin_set_b_copy = bin_set_b.copy()
-        bin_set_a_copy[bins_to_swap[0]] = bin_set_b[bins_to_swap[0]]
-        bin_set_a_copy[bins_to_swap[1]] = bin_set_b[bins_to_swap[1]]
-        bin_set_b_copy[bins_to_swap[0]] = bin_set_a[bins_to_swap[0]]
-        bin_set_b_copy[bins_to_swap[1]] = bin_set_a[bins_to_swap[1]]
-        crossed_over_bin_sets.append([bin_set_a_copy, bin_set_b_copy])
+
+    bin_set_a = bin_sets_to_crossover[0]
+    bin_set_b = bin_sets_to_crossover[1]
+
+    bin_set_a_copy = list(bin_set_a)
+    bin_set_b_copy = list(bin_set_b)
+
+    bin_set_a_copy[bins_to_swap[0]] = bin_set_b[bins_to_swap[0]]
+    bin_set_a_copy[bins_to_swap[1]] = bin_set_b[bins_to_swap[1]]
+    bin_set_b_copy[bins_to_swap[0]] = bin_set_a[bins_to_swap[0]]
+    bin_set_b_copy[bins_to_swap[1]] = bin_set_a[bins_to_swap[1]]
+
+    crossed_over_bin_sets.append(bin_set_a_copy)
+    crossed_over_bin_sets.append(bin_set_b_copy)
+
+    printBins(crossed_over_bin_sets[0])
+    printBins(crossed_over_bin_sets[1])
 
     return crossed_over_bin_sets
 
@@ -261,7 +297,12 @@ if __name__ == "__main__":
             print(" > Fitness:", the_worst_bins_fitness)
             print('\n')
 
-        assignSelection(remaining_bins_w)
+        bin_selection_list = []
+        bin_selection_list = assignSelection(remaining_bins_w)
+        crossoverBins(bin_selection_list, [1,2])
+        mutateBins(remaining_bins_w)
+
+
     # Tower Building
     elif puzzle_num == 2:
         pass
