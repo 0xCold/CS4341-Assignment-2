@@ -136,6 +136,21 @@ def mutateBins(bin_sets):
                 mutated_bin[mutated_index] = mutator_num
 
 
+def crossoverBins(bin_sets, bins_to_swap):
+    # TODO select bin sets to crossover
+    bin_sets_to_crossover = [[random.choice(bin_sets), random.choice(bin_sets)]]
+    crossed_over_bin_sets = []
+    for [bin_set_a, bin_set_b] in bin_sets_to_crossover:
+        bin_set_a_copy = bin_set_a.copy()
+        bin_set_b_copy = bin_set_b.copy()
+        bin_set_a_copy[bins_to_swap[0]] = bin_set_b[bins_to_swap[0]]
+        bin_set_a_copy[bins_to_swap[1]] = bin_set_b[bins_to_swap[1]]
+        bin_set_b_copy[bins_to_swap[0]] = bin_set_a[bins_to_swap[0]]
+        bin_set_b_copy[bins_to_swap[1]] = bin_set_a[bins_to_swap[1]]
+        crossed_over_bin_sets.append([bin_set_a_copy, bin_set_b_copy])
+    return crossed_over_bin_sets
+
+
 # Print out the beautified set of bins to the console
 def printBins(bins):
     for a_bin in bins:
