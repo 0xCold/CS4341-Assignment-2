@@ -103,8 +103,11 @@ def assignSelection(bin_sets):
     print('\n')
 
     bin_selection_list = []
+    total_percentage = 0
     for bin_set in bin_sets:
-        selection_bin = (abs(calcBinsFitness(bin_set)/sum_bin_fitness), bin_set)
+        cumulative_percentage = abs(calcBinsFitness(bin_set)/sum_bin_fitness) + total_percentage
+        total_percentage = cumulative_percentage
+        selection_bin = (cumulative_percentage, bin_set)
         bin_selection_list.append(selection_bin)
         print(selection_bin)
         print('\n')
