@@ -145,6 +145,7 @@ def crossoverBins(bin_sets, bins_to_swap):
     parent_1 = random.uniform(0, 1)
     parent_2 = random.uniform(0, 1)
 
+    bin_sets_to_crossover = []
     # Find parent 1 and parent 2
     for tuple_set in bin_sets:
         if parent_1 <= tuple_set[0] or parent_2 <= tuple_set[0]:
@@ -160,7 +161,7 @@ def crossoverBins(bin_sets, bins_to_swap):
         bin_set_b_copy[bins_to_swap[0]] = bin_set_a[bins_to_swap[0]]
         bin_set_b_copy[bins_to_swap[1]] = bin_set_a[bins_to_swap[1]]
         crossed_over_bin_sets.append([bin_set_a_copy, bin_set_b_copy])
-        
+
     return crossed_over_bin_sets
 
 
