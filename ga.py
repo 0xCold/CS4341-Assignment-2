@@ -5,6 +5,12 @@ import time
 
 NUM_BINS = 4
 MUTATION_ODDS = 1  # Odds out of 100 for an individual bin to mutate
+INITIAL_POPULATION_SIZE = 10
+
+USE_ELITISM = True
+USE_CULLING = True
+
+CROSSOVER_BINS = [1, 2C]
 
 
 # Get input from user
@@ -59,7 +65,7 @@ def calcBinsFitness(bins):
 
 
 # From a list of sets of bins, return the N best-scoring sets (by fitness), along with the remaining boards
-def getAndPopBestNBinSets(bin_sets, n):
+def getBestNBinSets(bin_sets, n):
     best_bin_sets = []
     for _ in range(n):
         best_fitness = -1
@@ -71,7 +77,7 @@ def getAndPopBestNBinSets(bin_sets, n):
                 best_bin_set_index = index
         best_bin_sets.append(bin_sets[best_bin_set_index])
         del bin_sets[best_bin_set_index]
-    return [best_bin_sets, bin_sets]
+    return best_bin_sets
 
 
 # From a list of sets of bins, return the N worst-scoring sets (by fitness), along with the remaining boards
@@ -87,7 +93,7 @@ def getAndPopWorstNBinSets(bin_sets, n):
                 worst_bin_set_index = index
         worst_bin_sets.append(bin_sets[worst_bin_set_index])
         del bin_sets[worst_bin_set_index]
-    return [worst_bin_sets, bin_sets]
+    return bin_sets
 
 
 # pass in culled list of bin sets
@@ -204,28 +210,25 @@ def crossoverBins(bin_sets, bins_to_swap):
 def printBins(bins):
     for a_bin in bins:
         for num in a_bin:
-            print(round(num, 1))
+            print(round(num, 1), end=" ")
         print('\n')
 
 
 # Write the representation of a set of bins to a file
-def exportBins(bins, file_name_suffix):
+def exportBins(nums, file_name_suffix):
     with open("puzzles/bins/bins-" + str(file_name_suffix) + ".txt", "w+") as f:
-        for a_bin in bins:
-            for num in a_bin:
-                f.write(str(num) + " ")
-            f.write("\n")
+        for num in nums:
+            f.write(str(num) + "\n")
 
 
 # Read the representation of a set of bins from a specified file path
 def parseBins(bins_file_path):
-    parsed_bins = []
+    parsed_nums = []
     with open(bins_file_path, "r") as f:
         bins_text = f.readlines()
-        for a_bin in bins_text:
-            a_bin_nums = a_bin.split()
-            parsed_bins.append([float(i) for i in a_bin_nums])
-    return parsed_bins
+        for num in bins_text:
+            parsed_nums.append(float(num))
+    return parsed_nums
 
 
 def genRandomTower():
@@ -260,7 +263,31 @@ if __name__ == "__main__":
     # Get user input
     puzzle_num, info_file, num_seconds = parse_args()
 
-    # TIMER STUFF TO BE MOVED
+    input_nums = parseBins(info_file)
+    print(input_nums)
+
+    population = []
+    for i in range(INITIAL_POPULATION_SIZE):
+        random_bin = genRandomBins(input_nums)
+        population.append(random_bin)
+
+    ga_running = True
+    start_time = time.time()
+    population_num = 0
+
+    while ga_running:
+        if USE_ELITISM:
+            elite_bins = getBestNBinSets(population)
+        if USE_CULLING:
+            population = getAndPopWorstNBinSets(population)
+        crossoverBins(population, CROSSOVER_BINS)
+        mutateBins(population)
+
+        population_num += 1
+        ga_running = not timeRunOut(start_time, num_seconds)
+
+
+    """# TIMER STUFF TO BE MOVED
     start_time = time.time()
     timeRunOut(start_time, num_seconds)
 
@@ -306,3 +333,4 @@ if __name__ == "__main__":
     # Bad Input
     else:
         print("Bad puzzle number input. Must be either a 1 for number allocation or a 2 for tower building")
+"""
