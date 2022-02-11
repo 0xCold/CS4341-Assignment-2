@@ -2,7 +2,6 @@ import math
 import random
 import argparse
 import time
-import numpy as np
 
 NUM_BINS = 4
 MUTATION_ODDS = 1  # Odds out of 100 for an individual bin to mutate
@@ -90,6 +89,7 @@ def getAndPopWorstNBinSets(bin_sets, n):
         del bin_sets[worst_bin_set_index]
     return [worst_bin_sets, bin_sets]
 
+
 # pass in culled list of bin sets
 def assignSelection(bin_sets):
     bin_fitness = []
@@ -105,22 +105,24 @@ def assignSelection(bin_sets):
         for bin_fit in bin_fitness:
             shifted_bin_fitness.append(bin_fit + min_bin_fitness)
 
-    # find sum of all fitnesses
-    sum_bin_fitness = sum(shifted_bin_fitness)
+        bin_fitness = shifted_bin_fitness
+
+    # find sum of all fitness's
+    sum_bin_fitness = sum(bin_fitness)
     print("SUM OF BIN FITNESS", sum_bin_fitness)
     print('\n')
 
-    bin_selection_list = []
+    bin_selection = []
     total_percentage = 0
     for i in range(len(bin_sets)):
-        cumulative_percentage = (shifted_bin_fitness[i]/sum_bin_fitness) + total_percentage
+        cumulative_percentage = (bin_fitness[i] / sum_bin_fitness) + total_percentage
         total_percentage = cumulative_percentage
         selection_bin = (cumulative_percentage, bin_sets[i])
-        bin_selection_list.append(selection_bin)
+        bin_selection.append(selection_bin)
         # print(selection_bin)
         # print('\n')
 
-    return bin_selection_list # List of tuple + list: [(probability, [bin_set])]
+    return bin_selection  # List of tuple + list: [(probability, [bin_set])]
 
 
 # Randomly mutates bins in a list of bin sets, based on the mutation odds global variable
@@ -161,10 +163,10 @@ def crossoverBins(bin_sets, bins_to_swap):
         if parent_1 <= tuple_set[0]:
             bin_sets_to_crossover.append(tuple_set[1])
             break
-        counter_1+=1
+        counter_1 += 1
 
     counter_2 = 0
-    while(True):
+    while True:
         for tuple_set in bin_sets:
             if parent_2 <= tuple_set[0]:
                 if counter_1 == counter_2:
@@ -172,12 +174,9 @@ def crossoverBins(bin_sets, bins_to_swap):
                 else:
                     bin_sets_to_crossover.append(tuple_set[1])
                 break
-            counter_2+=1
+            counter_2 += 1
         if counter_1 != counter_2:
             break
-
-    #TODO: MAKE SURE THAT THE TWO CROSSED OVER BINS ARE DIFFERENT
-
 
     crossed_over_bin_sets = []
 
@@ -257,7 +256,6 @@ def printTower(tower):
         print('\n')
 
 
-
 if __name__ == "__main__":
     # Get user input
     puzzle_num, info_file, num_seconds = parse_args()
@@ -297,11 +295,9 @@ if __name__ == "__main__":
             print(" > Fitness:", the_worst_bins_fitness)
             print('\n')
 
-        bin_selection_list = []
         bin_selection_list = assignSelection(remaining_bins_w)
-        crossoverBins(bin_selection_list, [1,2])
+        crossoverBins(bin_selection_list, [1, 2])
         mutateBins(remaining_bins_w)
-
 
     # Tower Building
     elif puzzle_num == 2:
