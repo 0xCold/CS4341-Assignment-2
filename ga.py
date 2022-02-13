@@ -7,6 +7,8 @@ from copy import deepcopy
 
 NUM_BINS = 4
 MUTATION_ODDS = 10  # Odds out of 100 for an individual bin to mutate
+FINISH_BUILDING_PREMATURELY_ODDS = 10
+
 INITIAL_POPULATION_SIZE = 10
 
 USE_ELITISM = True
@@ -230,8 +232,27 @@ def parseBins(bins_file_path):
     return parsed_nums
 
 
-def genRandomTower():
-    pass
+def genRandomTower(pieces):
+    constructed_tower = []
+    for piece in pieces:
+        None
+
+
+# Read the representation of a set of bins from a specified file path
+def parseTowerPieces(pieces_file_path):
+    parsed_pieces = []
+    with open(pieces_file_path, "r") as f:
+        pieces_text = f.readlines()
+        for piece in pieces_text:
+            parsed_pieces.append(piece.split())
+    return parsed_pieces
+
+
+def mutateTowers(towers):
+    for tower in towers:
+        do_mutate = random.randint(0, 100) <= MUTATION_ODDS
+        if do_mutate:
+            None
 
 
 def calcTowerFitness(tower):
@@ -304,6 +325,8 @@ if __name__ == "__main__":
             if calcBinsFitness(best_child) > calcBinsFitness(best_bin):
                 best_bin = deepcopy(best_child)
                 best_bin_generation = generation_num
+
+            #print("Mid score", calcBinsFitness(best_child))
 
             # Set up next generation
             population = children_bins
