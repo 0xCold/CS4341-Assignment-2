@@ -234,28 +234,28 @@ def parseBins(bins_file_path):
 
 def genRandomTower(pieces):
     constructed_tower = []
-    for piece in pieces:
-        None
-
-
-# Read the representation of a set of bins from a specified file path
-def parseTowerPieces(pieces_file_path):
-    parsed_pieces = []
-    with open(pieces_file_path, "r") as f:
-        pieces_text = f.readlines()
-        for piece in pieces_text:
-            parsed_pieces.append(piece.split())
-    return parsed_pieces
+    do_end = False
+    for piece in range(len(pieces)):
+        pieces.shuffle()
+        if not do_end:
+            constructed_tower.append(pieces.pop())
+            do_end = random.randint(0, 100) <= FINISH_BUILDING_PREMATURELY_ODDS
+    return constructed_tower
 
 
 def mutateTowers(towers):
     for tower in towers:
+        tower_copy = list.copy(tower)
         do_mutate = random.randint(0, 100) <= MUTATION_ODDS
         if do_mutate:
-            None
+            tower_copy.shuffle()
+            tower_piece_a = tower_copy.pop()
+            tower_copy.shuffle()
+            tower_piece_b = tower_copy.pop()
 
 
 def calcTowerFitness(tower):
+    cost = 0
     if (tower[0][0] != "Door") or (tower[len(tower) - 1][0] != "Lookout"):
         return 0
 
@@ -268,8 +268,9 @@ def calcTowerFitness(tower):
             return 0
 
         previous_piece_wideness = piece[1]
+        cost += piece[2]
 
-    return 1
+    return 10 + (len(tower) ** 2) - cost
 
 
 def printTower(tower):
@@ -277,6 +278,16 @@ def printTower(tower):
         for spec in piece:
             print(spec, " ")
         print('\n')
+
+
+# Read the representation of a set of bins from a specified file path
+def parseTowerPieces(pieces_file_path):
+    parsed_pieces = []
+    with open(pieces_file_path, "r") as f:
+        pieces_text = f.readlines()
+        for piece in pieces_text:
+            parsed_pieces.append(piece.split())
+    return parsed_pieces
 
 
 if __name__ == "__main__":
@@ -325,8 +336,6 @@ if __name__ == "__main__":
             if calcBinsFitness(best_child) > calcBinsFitness(best_bin):
                 best_bin = deepcopy(best_child)
                 best_bin_generation = generation_num
-
-            #print("Mid score", calcBinsFitness(best_child))
 
             # Set up next generation
             population = children_bins
