@@ -236,7 +236,7 @@ def genRandomTower(pieces):
     constructed_tower = []
     do_end = False
     for piece in range(len(pieces)):
-        pieces.shuffle()
+        random.shuffle(pieces)
         if not do_end:
             constructed_tower.append(pieces.pop())
             do_end = random.randint(0, 100) <= FINISH_BUILDING_PREMATURELY_ODDS
@@ -495,7 +495,7 @@ if __name__ == "__main__":
             # Mutation
             children_towers = mutateTowers(children_towers)
 
-            # Check if a new best bin set has been found
+            # Check if a new best tower has been found
             best_child = getBestNTowers(children_towers, 1)[0]
             if calcTowerFitness(best_child) > calcTowerFitness(best_tower):
                 best_tower = deepcopy(best_child)
