@@ -255,6 +255,7 @@ def mutateTowers(towers):
             tower_piece_b_index = tower_copy.index(tower_piece_b)
             tower[tower_piece_a_index] = tower_piece_b
             tower[tower_piece_b_index] = tower_piece_a
+    return towers
 
 
 # From a list of sets of bins, return the N best-scoring sets (by fitness), along with the remaining boards
@@ -383,9 +384,54 @@ if __name__ == "__main__":
         print("Best Score", calcBinsFitness(best_bin))
         print("Total Generations Run", generation_num)
         print("Best Generation", best_bin_generation)
+
     # Tower Building
     elif puzzle_num == 2:
-        pass
+        input_pieces = parseTowerPieces(info_file)
+
+        population = []
+        for i in range(INITIAL_POPULATION_SIZE):
+            random_tower = genRandomTower(input_pieces)
+            population.append(random_tower)
+
+        best_tower = getBestNTowers(population, 1)[0]
+        generation_num = 0
+        best_tower_generation = generation_num
+        ga_running = True
+        start_time = time.time()
+
+        while ga_running:
+            generation_num += 1
+            # Elitism
+            if USE_ELITISM:
+                children_towers = getBestNTowers(population, NUM_ELITISM)
+            else:
+                children_towers = []
+            # Culling
+            if USE_CULLING:
+                population = getAndPopWorstNTowers(population, NUM_CULLING)
+
+            # Mutation
+            children_towers = mutateTowers(children_towers)
+
+            # Check if a new best bin set has been found
+            best_child = getBestNTowers(children_towers, 1)[0]
+            if calcTowerFitness(best_child) > calcTowerFitness(best_tower):
+                best_tower = deepcopy(best_child)
+                best_tower_generation = generation_num
+
+            # Set up next generation
+            population = children_towers
+            ga_running = not timeRunOut(start_time, num_seconds)
+
+        # Output
+        print("****OUTPUT****")
+        print("Best Tower")
+        printBins(best_tower)
+        print("Best Score", calcTowerFitness(best_tower))
+        print("Total Generations Run", generation_num)
+        print("Best Generation", best_tower_generation)
+
     # Bad Input
     else:
         print("Bad puzzle number input. Must be either a 1 for number allocation or a 2 for tower building")
