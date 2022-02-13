@@ -508,7 +508,7 @@ if __name__ == "__main__":
         # Output
         print("****OUTPUT****")
         print("Best Tower")
-        printBins(best_tower)
+        printTower(best_tower)
         print("Best Score", calcTowerFitness(best_tower))
         print("Total Generations Run", generation_num)
         print("Best Generation", best_tower_generation)
