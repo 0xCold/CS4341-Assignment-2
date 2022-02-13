@@ -248,10 +248,45 @@ def mutateTowers(towers):
         tower_copy = list.copy(tower)
         do_mutate = random.randint(0, 100) <= MUTATION_ODDS
         if do_mutate:
-            tower_copy.shuffle()
-            tower_piece_a = tower_copy.pop()
-            tower_copy.shuffle()
-            tower_piece_b = tower_copy.pop()
+            tower_piece_a = random.choice(tower_copy)
+            tower_piece_a_index = tower_copy.index(tower_piece_a)
+            del tower_copy[tower_piece_a_index]
+            tower_piece_b = random.choice(tower_copy)
+            tower_piece_b_index = tower_copy.index(tower_piece_b)
+            tower[tower_piece_a_index] = tower_piece_b
+            tower[tower_piece_b_index] = tower_piece_a
+
+
+# From a list of sets of bins, return the N best-scoring sets (by fitness), along with the remaining boards
+def getBestNTowers(towers, n):
+    copy_towers = deepcopy(towers)
+    best_towers = []
+    for _ in range(n):
+        best_fitness = -1
+        best_tower_index = 0
+        for index, tower in enumerate(copy_towers):
+            tower_fitness = calcTowerFitness(tower)
+            if tower_fitness > best_fitness:
+                best_fitness = tower_fitness
+                best_tower_index = index
+        best_towers.append(copy_towers[best_tower_index])
+        del copy_towers[best_tower_index]
+    return best_towers
+
+
+# From a list of sets of bins, return the N worst-scoring sets (by fitness), along with the remaining boards
+def getAndPopWorstNTowers(towers, n):
+    copy_towers = deepcopy(towers)
+    for _ in range(n):
+        worst_fitness = -1
+        worst_tower_index = 0
+        for index, tower in enumerate(copy_towers):
+            tower_fitness = calcTowerFitness(tower)
+            if tower_fitness < worst_fitness:
+                worst_fitness = tower_fitness
+                worst_tower_index = index
+        del copy_towers[worst_tower_index]
+    return copy_towers
 
 
 def calcTowerFitness(tower):
