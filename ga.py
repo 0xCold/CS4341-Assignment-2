@@ -103,7 +103,7 @@ def getAndPopWorstNBinSets(bin_sets, n):
 
 
 # pass in culled list of bin sets
-def assignSelection(bin_sets):
+def assignSelectionBins(bin_sets):
     bin_fitness = []
 
     # calculate bin fitness of 4 bins
@@ -290,6 +290,80 @@ def getAndPopWorstNTowers(towers, n):
     return copy_towers
 
 
+def assignSelectionTowers(towers):
+    tower_fitness = []
+
+    for tower in towers:
+        tower_fitness.append(calcTowerFitness(tower))
+
+    min_tower_fitness = min(tower_fitness)
+    if min_tower_fitness < 0:
+        min_tower_fitness = abs(min_tower_fitness) + 10
+        shifted_tower_fitness = []
+        for tower_fit in tower_fitness:
+            shifted_tower_fitness.append(tower_fit + min_tower_fitness)
+
+        tower_fitness = shifted_tower_fitness
+
+    # find sum of all fitness's
+    sum_tower_fitness = sum(tower_fitness)
+
+    tower_selection = []
+    total_percentage = 0
+    for k in range(len(towers)):
+        cumulative_percentage = (tower_fitness[k] / sum_tower_fitness) + total_percentage
+        total_percentage = cumulative_percentage
+        selection_bin = (cumulative_percentage, towers[k])
+        tower_selection.append(selection_bin)
+
+    return tower_selection  # List of tuple + list: [(probability, [bin_set])]
+
+
+def crossoverTowers(towers, pieces_to_swap):
+    parent_1 = random.uniform(0, 1)
+    parent_2 = random.uniform(0, 1)
+
+    # Find parent 1 and parent 2
+    towers_to_crossover = []
+    counter_1 = 0
+    for tuple_set in towers:
+        if parent_1 <= tuple_set[0]:
+            towers_to_crossover.append(tuple_set[1])
+            break
+        counter_1 += 1
+
+    counter_2 = 0
+    while True:
+        for tuple_set in towers:
+            if parent_2 <= tuple_set[0]:
+                if counter_1 == counter_2:
+                    parent_2 = random.uniform(0, 1)
+                else:
+                    towers_to_crossover.append(tuple_set[1])
+                break
+            counter_2 += 1
+        if counter_1 != counter_2:
+            break
+
+    crossed_over_towers = []
+
+    _tower_a = towers_to_crossover[0]
+    _tower_b = towers_to_crossover[1]
+
+    tower_a_copy = list(_tower_a)
+    tower_b_copy = list(_tower_b)
+
+    tower_a_copy[pieces_to_swap[0]] = _tower_b[pieces_to_swap[0]]
+    tower_a_copy[pieces_to_swap[1]] = _tower_b[pieces_to_swap[1]]
+    tower_b_copy[pieces_to_swap[0]] = _tower_a[pieces_to_swap[0]]
+    tower_b_copy[pieces_to_swap[1]] = _tower_a[pieces_to_swap[1]]
+
+    crossed_over_towers.append(tower_a_copy)
+    crossed_over_towers.append(tower_b_copy)
+
+    return tower_a_copy, tower_b_copy
+
+
 def calcTowerFitness(tower):
     cost = 0
     if (tower[0][0] != "Door") or (tower[len(tower) - 1][0] != "Lookout"):
@@ -357,7 +431,7 @@ if __name__ == "__main__":
                 population = getAndPopWorstNBinSets(population, NUM_CULLING)
 
             # Crossover
-            tuple_bins = assignSelection(population)
+            tuple_bins = assignSelectionBins(population)
             children_len = len(children_bins)
             for _ in range(int((INITIAL_POPULATION_SIZE - children_len) / 2)):
                 bin_a, bin_b = crossoverBins(tuple_bins, CROSSOVER_BINS)
@@ -410,6 +484,13 @@ if __name__ == "__main__":
             # Culling
             if USE_CULLING:
                 population = getAndPopWorstNTowers(population, NUM_CULLING)
+
+            tuple_towers = assignSelectionTowers(population)
+            children_len = len(children_towers)
+            for _ in range(int((INITIAL_POPULATION_SIZE - children_len) / 2)):
+                tower_a, tower_b = crossoverTowers(tuple_towers, CROSSOVER_BINS)
+                children_towers.append(tower_a)
+                children_towers.append(tower_b)
 
             # Mutation
             children_towers = mutateTowers(children_towers)
