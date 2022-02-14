@@ -288,13 +288,15 @@ def genRandomTower(pieces):
 def mutateTowers(towers):
     for tower in towers:
         tower_copy = deepcopy(tower)
+        print("Copy start", tower_copy)
         # Odds to do the mutation
-        if random.randint(0, 100) <= MUTATION_ODDS:
+        if random.randint(0, 100) <= MUTATION_ODDS and len(tower_copy) > 1:
             # Get a piece to swap
             tower_piece_a = random.choice(tower_copy)
             tower_piece_a_index = tower_copy.index(tower_piece_a)
             del tower_copy[tower_piece_a_index]
             # Get the second piece
+            print("Copy mid", tower_copy)
             tower_piece_b = random.choice(tower_copy)
             tower_piece_b_index = tower_copy.index(tower_piece_b)
             # Swap the pieces
@@ -342,8 +344,8 @@ def assignSelectionTowers(towers):
         tower_fitness.append(calcTowerFitness(tower))
 
     min_tower_fitness = min(tower_fitness)
-    if min_tower_fitness < 0:
-        min_tower_fitness = abs(min_tower_fitness) + 10
+    if min_tower_fitness == 0:
+        min_tower_fitness = min_tower_fitness + 10
         shifted_tower_fitness = []
         for tower_fit in tower_fitness:
             shifted_tower_fitness.append(tower_fit + min_tower_fitness)
@@ -351,7 +353,7 @@ def assignSelectionTowers(towers):
         tower_fitness = shifted_tower_fitness
 
     # find sum of all fitness's
-    sum_tower_fitness = max(sum(tower_fitness), 0.001)
+    sum_tower_fitness = sum(tower_fitness)
 
     tower_selection = []
     total_percentage = 0
@@ -377,8 +379,9 @@ def crossoverTowers(towers, pieces_to_swap):
             break
         counter_1 += 1
 
-    counter_2 = 0
+    print(towers)
     while True:
+        counter_2 = 0
         for tuple_set in towers:
             if parent_2 <= tuple_set[0]:
                 if counter_1 == counter_2:
@@ -404,7 +407,6 @@ def crossoverTowers(towers, pieces_to_swap):
     tower_b_lower_half = _tower_b[math.floor(len(_tower_b) / 2): len(_tower_b)]
 
     new_tower_a = tower_a_upper_half + tower_b_lower_half
-
     return new_tower_a
 
 
@@ -598,7 +600,6 @@ if __name__ == "__main__":
             population = children_towers
             ga_running = not timeRunOut(start_time, num_seconds)
 
-            print(population)
 
         # Output
         print("****OUTPUT****")

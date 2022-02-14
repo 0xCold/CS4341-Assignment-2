@@ -3,3 +3,10 @@ Wall, 5, 5, 1
 Wall, 5, 5, 1
 Wall, 5, 5, 1
 Lookout, 3, 1, 2
+Door, 3, 2, 4
+Wall, 7, 4, 2
+Wall, 4, 3, 1
+Wall, 2, 2, 3
+Lookout, 1, 2, 2
+Door, 7, 4, 5
+Lookout, 5, 1, 1
