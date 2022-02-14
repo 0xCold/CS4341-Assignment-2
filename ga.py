@@ -288,7 +288,6 @@ def genRandomTower(pieces):
 def mutateTowers(towers):
     for tower in towers:
         tower_copy = deepcopy(tower)
-        print("Copy start", tower_copy)
         # Odds to do the mutation
         if random.randint(0, 100) <= MUTATION_ODDS and len(tower_copy) > 1:
             # Get a piece to swap
@@ -296,7 +295,6 @@ def mutateTowers(towers):
             tower_piece_a_index = tower_copy.index(tower_piece_a)
             del tower_copy[tower_piece_a_index]
             # Get the second piece
-            print("Copy mid", tower_copy)
             tower_piece_b = random.choice(tower_copy)
             tower_piece_b_index = tower_copy.index(tower_piece_b)
             # Swap the pieces
@@ -325,6 +323,7 @@ def getBestNTowers(towers, n):
 # From a list of sets of bins, return the N worst-scoring sets (by fitness), along with the remaining boards
 def getAndPopWorstNTowers(towers, n):
     copy_towers = deepcopy(towers)
+    worst_towers = []
     for _ in range(n):
         worst_fitness = 99999
         worst_tower_index = 0
@@ -333,8 +332,9 @@ def getAndPopWorstNTowers(towers, n):
             if tower_fitness < worst_fitness:
                 worst_fitness = tower_fitness
                 worst_tower_index = index
+        worst_towers.append(copy_towers[worst_tower_index])
         del copy_towers[worst_tower_index]
-    return copy_towers
+    return copy_towers, worst_towers
 
 
 def assignSelectionTowers(towers):
@@ -558,11 +558,15 @@ if __name__ == "__main__":
         input_pieces = parseTowerPieces(info_file)
 
         population = []
+        all_fitness_values = []
+        stats_data = []
         for i in range(INITIAL_POPULATION_SIZE):
             random_tower = genRandomTower(input_pieces)
             population.append(random_tower)
+            all_fitness_values.append(calcTowerFitness(random_tower))
 
         best_tower = getBestNTowers(population, 1)[0]
+        worst_tower = getAndPopWorstNTowers(population, 1)[1][0]
         generation_num = 0
         best_tower_generation = generation_num
         ga_running = True
@@ -572,10 +576,12 @@ if __name__ == "__main__":
             generation_num += 1
             if USE_ELITISM:
                 children_towers = getBestNTowers(population, NUM_ELITISM)
+                for c_tower in children_towers:
+                    all_fitness_values.append(calcTowerFitness(c_tower))
             else:
                 children_towers = []
             if USE_CULLING:
-                population = getAndPopWorstNTowers(population, NUM_CULLING)
+                population, worst_towers = getAndPopWorstNTowers(population, NUM_CULLING)
 
             tuple_towers = assignSelectionTowers(population)
 
@@ -584,8 +590,11 @@ if __name__ == "__main__":
                 new_child_tower = crossoverTowers(tuple_towers, CROSSOVER_BINS)
                 if assertTowerValid(new_child_tower, input_pieces):
                     children_towers.append(new_child_tower)
+                    all_fitness_values.append(calcTowerFitness(new_child_tower))
                 else:
-                    children_towers.append(genRandomTower(input_pieces))
+                    cal = genRandomTower(input_pieces)
+                    children_towers.append(cal)
+                    all_fitness_values.append(calcTowerFitness(cal))
 
             # Mutation
             children_towers = mutateTowers(children_towers)
@@ -595,6 +604,14 @@ if __name__ == "__main__":
             if calcTowerFitness(best_child) > calcTowerFitness(best_tower):
                 best_tower = deepcopy(best_child)
                 best_tower_generation = generation_num
+
+            worst_child = getAndPopWorstNTowers(children_towers, 1)[1][0]
+            if calcTowerFitness(worst_child) < calcTowerFitness(worst_tower):
+                worst_child = deepcopy(worst_child)
+
+            if generation_num % 100 == 0:
+                stats_data.append([generation_num, calcTowerFitness(best_tower),
+                                   calcTowerFitness(worst_tower), median(all_fitness_values)])
 
             # Set up next generation
             population = children_towers
