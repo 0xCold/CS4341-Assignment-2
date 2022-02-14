@@ -4,8 +4,8 @@ import argparse
 import time
 from copy import deepcopy
 
-
 NUM_BINS = 4
+BIN_SIZE = 10
 MUTATION_ODDS = 10  # Odds out of 100 for an individual bin to mutate
 FINISH_BUILDING_PREMATURELY_ODDS = 10
 
@@ -139,10 +139,8 @@ def mutateBins(bin_sets):
     for bin_set in bin_sets:
         # Loop for bins in a bin set
         for a_bin in bin_set:
-            # Do mutation odds
-            do_mutate = random.randint(0, 100) <= MUTATION_ODDS
             # If mutation is true, swap a random number in this bin with a number from a different, random bin
-            if do_mutate:
+            if random.randint(0, 100) <= MUTATION_ODDS:
                 # Get mutator number and index
                 mutator_num = random.choice(a_bin)
                 mutator_index = a_bin.index(mutator_num)
@@ -175,8 +173,8 @@ def crossoverBins(bin_sets, bins_to_swap):
             break
         counter_1 += 1
 
-    counter_2 = 0
     while True:
+        counter_2 = 0
         for tuple_set in bin_sets:
             if parent_2 <= tuple_set[0]:
                 if counter_1 == counter_2:
@@ -188,24 +186,58 @@ def crossoverBins(bin_sets, bins_to_swap):
         if counter_1 != counter_2:
             break
 
-    crossed_over_bin_sets = []
-
+    # Define the 2 parents
     bin_set_a = bin_sets_to_crossover[0]
     bin_set_b = bin_sets_to_crossover[1]
 
-    bin_set_a_copy = list(bin_set_a)
-    bin_set_b_copy = list(bin_set_b)
+    # Make 2 sets of copies
+    bin_set_a_copy = deepcopy(bin_set_a)
+    bin_set_b_copy = deepcopy(bin_set_b)
+    bin_set_a_copy_2 = deepcopy(bin_set_a)
+    bin_set_b_copy_2 = deepcopy(bin_set_b)
 
-    bin_set_a_copy[bins_to_swap[0]] = bin_set_b[bins_to_swap[0]]
-    bin_set_a_copy[bins_to_swap[1]] = bin_set_b[bins_to_swap[1]]
-    bin_set_b_copy[bins_to_swap[0]] = bin_set_a[bins_to_swap[0]]
-    bin_set_b_copy[bins_to_swap[1]] = bin_set_a[bins_to_swap[1]]
+    # Swap the bins
+    bin_set_a_copy[bins_to_swap[0]] = bin_set_b_copy_2[bins_to_swap[0]]
+    bin_set_a_copy[bins_to_swap[1]] = bin_set_b_copy_2[bins_to_swap[1]]
+    bin_set_b_copy[bins_to_swap[0]] = bin_set_a_copy_2[bins_to_swap[0]]
+    bin_set_b_copy[bins_to_swap[1]] = bin_set_a_copy_2[bins_to_swap[1]]
 
-    crossed_over_bin_sets.append(bin_set_a_copy)
-    crossed_over_bin_sets.append(bin_set_b_copy)
+    # Look for duplicates
+    bin_dict_a = make_bin_dicts(bin_set_a_copy)
+    bin_dict_b = make_bin_dicts(bin_set_b_copy)
+    bin_a_duplicates = find_duplicate_keys(bin_dict_a)
+    bin_b_duplicates = find_duplicate_keys(bin_dict_b)
+
+    for duplicate_index in range(len(bin_a_duplicates)):
+        duplicate_number_a = bin_a_duplicates[duplicate_index]
+        duplicate_number_b = bin_b_duplicates[duplicate_index]
+        bin_a_index = bin_dict_a.get(duplicate_number_a)[0]
+        bin_b_index = bin_dict_b.get(duplicate_number_b)[0]
+        bin_set_a_copy[bin_a_index[0]][bin_a_index[1]] = duplicate_number_b
+        bin_set_b_copy[bin_b_index[0]][bin_b_index[1]] = duplicate_number_a
 
     return bin_set_a_copy, bin_set_b_copy
 
+
+def make_bin_dicts(bin_set):
+    bin_dict = {}
+    for bin_num in range(NUM_BINS):
+        for bin_index in range(BIN_SIZE):
+            number = bin_set[bin_num][bin_index]
+            if number in bin_dict.keys():
+                bin_dict.update({number: [bin_dict.get(number)[0],
+                                          bin_dict.get(number)[1] + 1]})
+            else:
+                bin_dict[number] = [[bin_num, bin_index], 1]
+
+    return bin_dict
+
+def find_duplicate_keys(bin_dict):
+    keys = []
+    for item in bin_dict.items():
+        if item[1][1] > 1:
+            keys.append(item[0])
+    return keys
 
 # Print out the beautified set of bins to the console
 def printBins(bins):
