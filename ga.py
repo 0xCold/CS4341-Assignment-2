@@ -1,3 +1,4 @@
+import copy
 import math
 import random
 import argparse
@@ -12,9 +13,9 @@ FINISH_BUILDING_PREMATURELY_ODDS = 10
 INITIAL_POPULATION_SIZE = 10
 
 USE_ELITISM = True
-NUM_ELITISM = 2
+NUM_ELITISM = 1
 USE_CULLING = True
-NUM_CULLING = 2
+NUM_CULLING = 5
 
 CROSSOVER_BINS = [1, 2]
 
@@ -232,12 +233,14 @@ def make_bin_dicts(bin_set):
 
     return bin_dict
 
+
 def find_duplicate_keys(bin_dict):
     keys = []
     for item in bin_dict.items():
         if item[1][1] > 1:
             keys.append(item[0])
     return keys
+
 
 # Print out the beautified set of bins to the console
 def printBins(bins):
@@ -265,24 +268,24 @@ def parseBins(bins_file_path):
 
 
 def genRandomTower(pieces):
+    pieces_copy = list.copy(pieces)
     constructed_tower = []
     do_end = False
-    for piece in range(len(pieces)):
-        random.shuffle(pieces)
+    for piece in range(len(pieces_copy)):
+        random.shuffle(pieces_copy)
         if not do_end:
-            constructed_tower.append(pieces.pop())
+            constructed_tower.append(pieces_copy.pop())
             do_end = random.randint(0, 100) <= FINISH_BUILDING_PREMATURELY_ODDS
     return constructed_tower
 
 
 def mutateTowers(towers):
     for tower in towers:
-        tower_copy = list.copy(tower)
+        tower_copy = copy.deepcopy(tower)
         do_mutate = random.randint(0, 100) <= MUTATION_ODDS
         if do_mutate:
             tower_piece_a = random.choice(tower_copy)
             tower_piece_a_index = tower_copy.index(tower_piece_a)
-            del tower_copy[tower_piece_a_index]
             tower_piece_b = random.choice(tower_copy)
             tower_piece_b_index = tower_copy.index(tower_piece_b)
             tower[tower_piece_a_index] = tower_piece_b
@@ -311,7 +314,7 @@ def getBestNTowers(towers, n):
 def getAndPopWorstNTowers(towers, n):
     copy_towers = deepcopy(towers)
     for _ in range(n):
-        worst_fitness = -1
+        worst_fitness = 99999
         worst_tower_index = 0
         for index, tower in enumerate(copy_towers):
             tower_fitness = calcTowerFitness(tower)
@@ -338,15 +341,15 @@ def assignSelectionTowers(towers):
         tower_fitness = shifted_tower_fitness
 
     # find sum of all fitness's
-    sum_tower_fitness = sum(tower_fitness)
+    sum_tower_fitness = max(sum(tower_fitness), 0.001)
 
     tower_selection = []
     total_percentage = 0
     for k in range(len(towers)):
         cumulative_percentage = (tower_fitness[k] / sum_tower_fitness) + total_percentage
         total_percentage = cumulative_percentage
-        selection_bin = (cumulative_percentage, towers[k])
-        tower_selection.append(selection_bin)
+        selection_tower = (cumulative_percentage, towers[k])
+        tower_selection.append(selection_tower)
 
     return tower_selection  # List of tuple + list: [(probability, [bin_set])]
 
@@ -377,23 +380,22 @@ def crossoverTowers(towers, pieces_to_swap):
         if counter_1 != counter_2:
             break
 
-    crossed_over_towers = []
+    if len(towers_to_crossover) == 0:
+        towers_copy = list.copy(towers)
+        random.shuffle(towers_copy)
+        towers_to_crossover.append(towers_copy.pop()[1])
+        random.shuffle(towers_copy)
+        towers_to_crossover.append(towers_copy.pop()[1])
 
     _tower_a = towers_to_crossover[0]
     _tower_b = towers_to_crossover[1]
 
-    tower_a_copy = list(_tower_a)
-    tower_b_copy = list(_tower_b)
+    tower_a_upper_half = _tower_a[0: math.floor(len(_tower_a) / 2)]
+    tower_b_lower_half = _tower_b[math.floor(len(_tower_b) / 2): len(_tower_b)]
 
-    tower_a_copy[pieces_to_swap[0]] = _tower_b[pieces_to_swap[0]]
-    tower_a_copy[pieces_to_swap[1]] = _tower_b[pieces_to_swap[1]]
-    tower_b_copy[pieces_to_swap[0]] = _tower_a[pieces_to_swap[0]]
-    tower_b_copy[pieces_to_swap[1]] = _tower_a[pieces_to_swap[1]]
+    new_tower_a = tower_a_upper_half + tower_b_lower_half
 
-    crossed_over_towers.append(tower_a_copy)
-    crossed_over_towers.append(tower_b_copy)
-
-    return tower_a_copy, tower_b_copy
+    return new_tower_a
 
 
 def calcTowerFitness(tower):
@@ -401,16 +403,20 @@ def calcTowerFitness(tower):
     if (tower[0][0] != "Door") or (tower[len(tower) - 1][0] != "Lookout"):
         return 0
 
-    previous_piece_wideness = 0
+    previous_piece_wideness = -1
     for index, piece in enumerate(tower):
         if (piece[0] == "Door" and index != 0) or (piece[0] == "Lookout" and index != (len(tower) - 1)):
             return 0
 
-        if (piece[1] > previous_piece_wideness) and (previous_piece_wideness > 0):
+        if (int(piece[1]) > previous_piece_wideness) and (previous_piece_wideness != -1):
+            return 0
+        previous_piece_wideness = int(piece[1])
+
+        num_pieces_above = len(tower) - index
+        if num_pieces_above > int(piece[2]):
             return 0
 
-        previous_piece_wideness = piece[1]
-        cost += piece[2]
+        cost += int(piece[3])
 
     return 10 + (len(tower) ** 2) - cost
 
@@ -418,8 +424,17 @@ def calcTowerFitness(tower):
 def printTower(tower):
     for piece in tower:
         for spec in piece:
-            print(spec, " ")
+            print(spec, end=" ")
         print('\n')
+
+
+def printTowers(towers):
+    index = 1
+    for tower in towers:
+        print("Tower " + str(index) + ":")
+        printTower(tower)
+        print("\n")
+        index += 1
 
 
 # Read the representation of a set of bins from a specified file path
@@ -428,8 +443,17 @@ def parseTowerPieces(pieces_file_path):
     with open(pieces_file_path, "r") as f:
         pieces_text = f.readlines()
         for piece in pieces_text:
-            parsed_pieces.append(piece.split())
+            parsed_pieces.append(piece[:-1].split(", "))
     return parsed_pieces
+
+
+def assertTowerValid(tower, pieces):
+    pieces_copy = list.copy(pieces)
+    for piece in tower:
+        if piece not in pieces_copy:
+            return False
+        del pieces_copy[pieces_copy.index(piece)]
+    return True
 
 
 if __name__ == "__main__":
@@ -508,21 +532,22 @@ if __name__ == "__main__":
 
         while ga_running:
             generation_num += 1
-            # Elitism
             if USE_ELITISM:
                 children_towers = getBestNTowers(population, NUM_ELITISM)
             else:
                 children_towers = []
-            # Culling
             if USE_CULLING:
                 population = getAndPopWorstNTowers(population, NUM_CULLING)
 
             tuple_towers = assignSelectionTowers(population)
+
             children_len = len(children_towers)
-            for _ in range(int((INITIAL_POPULATION_SIZE - children_len) / 2)):
-                tower_a, tower_b = crossoverTowers(tuple_towers, CROSSOVER_BINS)
-                children_towers.append(tower_a)
-                children_towers.append(tower_b)
+            for _ in range(INITIAL_POPULATION_SIZE - children_len):
+                new_child_tower = crossoverTowers(tuple_towers, CROSSOVER_BINS)
+                if assertTowerValid(new_child_tower, input_pieces):
+                    children_towers.append(new_child_tower)
+                else:
+                    children_towers.append(genRandomTower(input_pieces))
 
             # Mutation
             children_towers = mutateTowers(children_towers)
@@ -536,6 +561,8 @@ if __name__ == "__main__":
             # Set up next generation
             population = children_towers
             ga_running = not timeRunOut(start_time, num_seconds)
+
+            print(population)
 
         # Output
         print("****OUTPUT****")
