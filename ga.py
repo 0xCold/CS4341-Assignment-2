@@ -379,7 +379,6 @@ def crossoverTowers(towers, pieces_to_swap):
             break
         counter_1 += 1
 
-    print(towers)
     while True:
         counter_2 = 0
         for tuple_set in towers:
