@@ -4,6 +4,8 @@ import random
 import argparse
 import time
 from copy import deepcopy
+from statistics import median
+import csv
 
 NUM_BINS = 4
 BIN_SIZE = 10
@@ -91,6 +93,7 @@ def getBestNBinSets(bin_sets, n):
 # From a list of sets of bins, return the N worst-scoring sets (by fitness), along with the remaining boards
 def getAndPopWorstNBinSets(bin_sets, n):
     copy_bin_sets = deepcopy(bin_sets)
+    worst_bin_sets = []
     for _ in range(n):
         worst_fitness = -1
         worst_bin_set_index = 0
@@ -99,8 +102,9 @@ def getAndPopWorstNBinSets(bin_sets, n):
             if bin_set_fitness < worst_fitness:
                 worst_fitness = bin_set_fitness
                 worst_bin_set_index = index
+        worst_bin_sets.append(copy_bin_sets[worst_bin_set_index])
         del copy_bin_sets[worst_bin_set_index]
-    return copy_bin_sets
+    return copy_bin_sets, worst_bin_sets
 
 
 # pass in culled list of bin sets
@@ -267,6 +271,7 @@ def parseBins(bins_file_path):
     return parsed_nums
 
 
+# Make a random tower form the set of tower pieces
 def genRandomTower(pieces):
     pieces_copy = list.copy(pieces)
     constructed_tower = []
@@ -279,15 +284,20 @@ def genRandomTower(pieces):
     return constructed_tower
 
 
+# Decide if you want to change to tower by a mutation
 def mutateTowers(towers):
     for tower in towers:
-        tower_copy = copy.deepcopy(tower)
-        do_mutate = random.randint(0, 100) <= MUTATION_ODDS
-        if do_mutate:
+        tower_copy = deepcopy(tower)
+        # Odds to do the mutation
+        if random.randint(0, 100) <= MUTATION_ODDS:
+            # Get a piece to swap
             tower_piece_a = random.choice(tower_copy)
             tower_piece_a_index = tower_copy.index(tower_piece_a)
+            del tower_copy[tower_piece_a_index]
+            # Get the second piece
             tower_piece_b = random.choice(tower_copy)
             tower_piece_b_index = tower_copy.index(tower_piece_b)
+            # Swap the pieces
             tower[tower_piece_a_index] = tower_piece_b
             tower[tower_piece_b_index] = tower_piece_a
     return towers
@@ -456,6 +466,13 @@ def assertTowerValid(tower, pieces):
     return True
 
 
+def make_csv(stats):
+    with open('C:\\Users\\Ryana\\Downloads\\csv.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["Generation", "Best", "Worst", "Median"])
+        writer.writerows(stats)
+
+
 if __name__ == "__main__":
     # Get user input
     puzzle_num, info_file, num_seconds = parse_args()
@@ -465,11 +482,17 @@ if __name__ == "__main__":
         input_nums = parseBins(info_file)
 
         population = []
+        all_fitness_values = []
+        stats_data = []
         for i in range(INITIAL_POPULATION_SIZE):
             random_bin = genRandomBins(input_nums)
             population.append(random_bin)
+            all_fitness_values.append(calcBinsFitness(random_bin))
 
+        # Get best and worst bins
         best_bin = getBestNBinSets(population, 1)[0]
+        worst_bin = getAndPopWorstNBinSets(population, NUM_CULLING)[1][0]
+
         generation_num = 0
         best_bin_generation = generation_num
         ga_running = True
@@ -480,11 +503,13 @@ if __name__ == "__main__":
             # Elitism
             if USE_ELITISM:
                 children_bins = getBestNBinSets(population, NUM_ELITISM)
+                for c_bin in children_bins:
+                    all_fitness_values.append(calcBinsFitness(c_bin))
             else:
                 children_bins = []
             # Culling
             if USE_CULLING:
-                population = getAndPopWorstNBinSets(population, NUM_CULLING)
+                population, worst_bins = getAndPopWorstNBinSets(population, NUM_CULLING)
 
             # Crossover
             tuple_bins = assignSelectionBins(population)
@@ -492,7 +517,9 @@ if __name__ == "__main__":
             for _ in range(int((INITIAL_POPULATION_SIZE - children_len) / 2)):
                 bin_a, bin_b = crossoverBins(tuple_bins, CROSSOVER_BINS)
                 children_bins.append(bin_a)
+                all_fitness_values.append(calcBinsFitness(bin_a))
                 children_bins.append(bin_b)
+                all_fitness_values.append(calcBinsFitness(bin_b))
 
             # Mutation
             children_bins = mutateBins(children_bins)
@@ -502,10 +529,17 @@ if __name__ == "__main__":
             if calcBinsFitness(best_child) > calcBinsFitness(best_bin):
                 best_bin = deepcopy(best_child)
                 best_bin_generation = generation_num
+            worst_child = getAndPopWorstNBinSets(children_bins, 1)[1][0]
+            if calcBinsFitness(worst_child) < calcBinsFitness(worst_bin):
+                worst_bin = deepcopy(worst_child)
 
             # Set up next generation
             population = children_bins
             ga_running = not timeRunOut(start_time, num_seconds)
+
+            if generation_num % 100 == 0:
+                stats_data.append([generation_num, calcBinsFitness(best_bin),
+                                   calcBinsFitness(worst_bin), median(all_fitness_values)])
 
         # Output
         print("****OUTPUT****")
@@ -514,6 +548,8 @@ if __name__ == "__main__":
         print("Best Score", calcBinsFitness(best_bin))
         print("Total Generations Run", generation_num)
         print("Best Generation", best_bin_generation)
+
+        make_csv(stats_data)
 
     # Tower Building
     elif puzzle_num == 2:
